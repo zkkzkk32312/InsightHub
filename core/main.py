@@ -76,7 +76,7 @@ class SQLAgent:
             SCHEMA (Exact table and column names):
             Tables and their columns:
             - device: id, device_type_id
-            - device_type: id, device_type_name  
+            - device_type: id, device_type_name
             - device_telemetry: id, device_id, telemetry_type_id
             - telemetry_type: id, telemetry_type_name
             - simulated_telemetry: id, time_of_day, telemetry_value, device_telemetry_id
@@ -86,7 +86,7 @@ class SQLAgent:
             - device_telemetry.device_id references device.id
             - device_telemetry.telemetry_type_id references telemetry_type.id
             - simulated_telemetry.device_telemetry_id references device_telemetry.id
-            
+
             VALID TELEMETRY TYPES (for `telemetry_type_name` column):
             - Temperature
             - Power_Generated
@@ -156,7 +156,7 @@ class SQLAgent:
                 "answer": "Please try another question.",
                 "error": f"Failed to process query: {str(e)}"
             }
-        
+
     def summarize_result(self, question: str, result: Any) -> str:
         summary_system_prompt = """
         You are a helpful assistant that summarizes SQL query results into clear, concise answers.
@@ -190,6 +190,9 @@ mistralOllama = ChatOllama(
 )
 agent = SQLAgent(postgres, mistralOllama)
 
+def ask(question: str):
+    return agent.execute_nl_query(question)["answer"]
+
 def main():
     # schema = postgres.get_schema()
     # print(f"Database Schema: {schema}")
@@ -201,8 +204,9 @@ def main():
 
     print(f"Question: {question}")
 
-    answer = agent.execute_nl_query(question)["answer"]
+    answer = ask(question)
     print(f"Answer: {answer}")
 
 if __name__ == "__main__":
     main()
+
