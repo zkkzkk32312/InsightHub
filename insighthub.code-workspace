@@ -1,14 +1,7 @@
 {
-	"folders": [
-		{
-			"path": "core"
-		},
-		{
-			"path": "backend"
-		},
-		{
-			"path": "frontend"
-		}
-	],
-	"settings": {}
+  "folders": [
+    { "path": "insighthub/core" },
+    { "path": "insighthub/backend" },
+    { "path": "insighthub/frontend" }
+  ]
 }
