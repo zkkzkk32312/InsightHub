@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+*.venv
+Pipfile
+Pipfile.lock
+
+# Logs
+logs/
+*.log
+
+# Data
+*.sqlite3
+*.db
+*.csv
+*.json
+*.xml
+*.yaml
+*.pkl
+
+# Gradio-specific files (if applicable)
+gradio_cache/
+
+# IDE settings
+.vscode/
+.idea/
