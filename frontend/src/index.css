@@ -1,0 +1,140 @@
+/*
+  src/index.css
+  This file will serve as the primary entry point for Tailwind CSS v4.
+  It includes the main Tailwind import and custom base/component layers.
+*/
+
+/* 1. Main Tailwind CSS v4 Import */
+/* This replaces @tailwind base; @tailwind components; @tailwind utilities; */
+@import "tailwindcss";
+
+/* 2. Root/Global Variables and Base Styles */
+/* These are your global CSS variables and base styles applied to :root and body.
+   For compatibility with Tailwind's Preflight (its base reset styles),
+   it's often best to place your custom base styles within @layer base { ... }
+   This ensures they are part of Tailwind's CSS cascade layers.
+*/
+@layer base {
+  :root {
+    /* Define your default (light mode) colors and other root variables using CSS custom properties */
+    --color-text: rgba(255, 255, 255, 0.87);
+    --color-background: #242424;
+    --color-link: #646cff;
+    --color-link-hover: #535bf2;
+    --color-button-bg: #1a1a1a;
+    --color-button-border-hover: #646cff;
+
+    /* Other root properties you had */
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: light dark; /* Keep this for browser-level dark mode preference detection */
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Apply these custom properties */
+    color: var(--color-text);
+    background-color: var(--color-background);
+  }
+
+  body {
+    margin: 0;
+    display: flex;
+    place-items: center;
+    min-width: 320px;
+    min-height: 100vh;
+    /* You can also use Tailwind classes directly on body in your HTML/JSX
+       e.g., <body className="min-w-[320px] min-h-screen flex place-items-center">
+       For a library, explicit classes are often better than global body styles.
+    */
+  }
+
+  h1 {
+    /* Use @apply to integrate Tailwind utilities */
+    @apply text-5xl leading-tight; /* Equivalent to your 3.2em and 1.1 line-height */
+  }
+
+  a {
+    font-weight: 500;
+    color: var(--color-link);
+    text-decoration: inherit;
+  }
+  a:hover {
+    color: var(--color-link-hover);
+  }
+
+  button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: var(--color-button-bg);
+    cursor: pointer;
+    transition: border-color 0.25s;
+  }
+  button:hover {
+    border-color: var(--color-button-border-hover);
+  }
+  button:focus,
+  button:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+  }
+}
+
+/* 3. Dark Mode Configuration (CSS-first with @theme and @custom-variant) */
+/* This is how you define dark mode overrides in Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *)); /* This enables 'dark:' prefix based on '.dark' class on parent */
+
+@layer theme {
+  /* Define dark mode specific variables within a .dark selector (or other selector you use to toggle dark mode) */
+  .dark {
+    --color-text: rgba(255, 255, 255, 0.87); /* Often same or similar */
+    --color-background: #242424; /* Often same or similar */
+    --color-link: #8be9fd; /* Example: a lighter blue for dark mode */
+    --color-link-hover: #bd93f9; /* Example: a different hover color */
+    --color-button-bg: #444444; /* Darker button background */
+    --color-button-border-hover: #8be9fd; /* Dark mode button hover border */
+  }
+
+  /* You can also use @media (prefers-color-scheme: dark) directly for system preference */
+  @media (prefers-color-scheme: light) {
+    :root {
+      /* Re-define light mode variables for when system preference is light */
+      --color-text: #213547;
+      --color-background: #ffffff;
+      --color-link: #747bff; /* This value was for 'a:hover' in your original light mode */
+      --color-link-hover: #747bff; /* This might be what you meant for 'a:hover' */
+      --color-button-bg: #f9f9f9;
+      --color-button-border-hover: #646cff;
+    }
+    a:hover {
+        color: var(--color-link-hover); /* Ensure consistency with new variables */
+    }
+  }
+}
+
+/* 4. Custom Component Styles within @layer components */
+/* These are specific styles for your chat UI components.
+   Placing them in @layer components ensures they can be easily overridden by utilities
+   if needed, and fit into Tailwind's cascade order.
+*/
+@layer components {
+  /* You had duplicate entries for these, simplified to one set */
+  .react-chat-ui .message.right {
+    text-align: right;
+  }
+
+  .react-chat-ui .message.right .bubble {
+    /* Using @apply for consistency with Tailwind */
+    @apply bg-blue-500 text-white;
+  }
+
+  .react-chat-ui .message.left .bubble {
+    /* Using @apply for consistency with Tailwind */
+    @apply bg-gray-200;
+  }
+}
