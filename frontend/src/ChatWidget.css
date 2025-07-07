@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+.chat-widget {
+  @apply w-full max-w-md bg-white shadow-lg rounded-lg flex flex-col overflow-hidden fixed top-0 left-1/2 -translate-x-1/2 z-[1000] transition-[height] duration-300 ease-in-out;
+  height: var(--chat-height);
+}
+
+.chat-widget[data-minimized="true"] {
+  --chat-height: 3rem;
+}
+
+.chat-widget:not([data-minimized="true"]) {
+  --chat-height: 24rem;
+}
+
+.chat-header {
+  @apply bg-blue-500 text-white p-3 cursor-pointer flex items-center justify-between select-none;
+}
+
+.chat-message-area {
+  @apply flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50;
+}
+
+.chat-message-area[data-minimized="true"] {
+  @apply hidden;
+}
+
+.message-container {
+  @apply flex gap-2;
+}
+
+.message-container[data-user="true"] {
+  @apply justify-end;
+}
+
+.message-container[data-user="false"] {
+  @apply justify-start;
+}
+
+.avatar {
+  @apply w-6 h-6 rounded-full self-center;
+}
+
+.message-bubble {
+  @apply max-w-[75%] px-4 py-2 text-sm rounded-xl;
+}
+
+.message-bubble[data-user="true"] {
+  @apply bg-blue-500 text-white rounded-br-none;
+}
+
+.message-bubble[data-user="false"] {
+  @apply bg-gray-200 text-gray-900 rounded-bl-none;
+}
+
+.scroll {
+  @apply overflow-hidden whitespace-nowrap w-full;
+}
+
+.scroll div {
+  @apply inline-block hover:[animation-play-state:paused] min-w-[800px];
+}
+
+.scroll div span {
+  @apply inline-block mr-4 px-3 py-1 rounded-md bg-gray-500 text-white cursor-pointer tracking-wider;
+}
+
+.scroll div span:hover {
+  @apply bg-blue-500 hover:bg-blue-600 cursor-pointer;
+}
+
+.input-area {
+  @apply p-3 bg-white border-t flex items-center gap-2;
+}
+
+.input-field {
+  @apply flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-900;
+}
+
+.send-button {
+  @apply bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium;
+}

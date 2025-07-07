@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import ChatWidget from './src/ChatWidget'; // Path to your ChatWidget component
-import './src/index.css'; // <--- ADD THIS LINE to import your main CSS file!
+import ChatWidget from './src/ChatWidget';
+import './src/index.css';
 
 window.ChatWidget = {
   render: (containerId) => {
