@@ -5,10 +5,6 @@ import asyncio
 
 app = FastAPI()
 
-@app.get("/async-endpoint")
-async def read_async_data():
-    return {"message": "This is an async endpoint"}
-
 @app.get("/ask")
 async def ask_question(q: str = Query(..., description="The question to ask")):
     """Call the core.ask function with a string query."""
