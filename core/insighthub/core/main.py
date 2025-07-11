@@ -1,8 +1,9 @@
 import os
 import json
+import traceback
 from typing import Any
 from langchain_community.utilities.sql_database import SQLDatabase
-from langchain_community.chat_models import ChatOllama
+from langchain_ollama import ChatOllama
 from langchain_experimental.sql import SQLDatabaseChain
 from langchain.chains.sql_database.prompt import PROMPT
 from sqlalchemy import create_engine
@@ -151,6 +152,7 @@ class SQLAgent:
             }
 
         except Exception as e:
+            traceback.print_exc()
             print("❌ Failed to process query:", str(e))
             return {
                 "answer": "Please try another question.",
@@ -183,14 +185,26 @@ postgres = PostgresDB(
     port=db_config["port"],
     database=db_config["database"]
 )
-mistralOllama = ChatOllama(
-    model='mistral:latest',
-    url="http://localhost:11434/api/chat",
-    temperature=0.0
-)
-agent = SQLAgent(postgres, mistralOllama)
+
+_agent = None
+
+def get_agent():
+    global _agent
+    if _agent is None:
+        ollama_url = os.getenv("OLLAMA_URL", "http://192.168.1.104:11434")
+        print(f"🔌 Connecting to Ollama at: {ollama_url}")
+
+        mistralOllama = ChatOllama(
+            model='mistral:latest',
+            base_url=ollama_url,
+            temperature=0.0
+        )
+        _agent = SQLAgent(postgres, mistralOllama)
+
+    return _agent
 
 def ask(question: str):
+    agent = get_agent()
     return agent.execute_nl_query(question)["answer"]
 
 def main():

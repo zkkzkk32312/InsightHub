@@ -18,14 +18,26 @@ const ChatWidget = () => {
     "give me the top 3 devices that generates the most electricity."
   ];
 
-  const handleOnSend = () => {
+  const handleOnSend = async () => {
     if (!newMessage.trim()) return;
     const nextId = messages.length;
-    setMessages([
-      ...messages,
-      { id: nextId, message: newMessage.trim(), senderName: "You", isUser: true },
-    ]);
+    const userMessage = { id: nextId, message: newMessage.trim(), senderName: "You", isUser: true };
+    setMessages(prev => [...prev, userMessage]);
     setNewMessage('');
+
+    try {
+      const response = await fetch(`http://localhost:8000/ask?q=${newMessage.trim()}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      const botMessage = { id: nextId + 1, message: data.answer, senderName: "Bot", isUser: false };
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      const errorMessage = { id: nextId + 1, message: "Error: Could not send message. Please check your connection and try again.", senderName: "Bot", isUser: false };
+      setMessages(prev => [...prev, botMessage]);
+    }
   };
 
   function handleSampleQuestionClick(question) {

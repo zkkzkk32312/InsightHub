@@ -1,5 +1,6 @@
 langchain==0.3.26
 langchain_community==0.3.26
 langchain_experimental==0.3.4
+langchain-ollama
 SQLAlchemy==2.0.41
 psycopg2-binary==2.9.10
