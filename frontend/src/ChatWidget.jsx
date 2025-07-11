@@ -1,15 +1,108 @@
 import './ChatWidget.css';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useReducer } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { SyncLoader } from 'react-spinners';
 import { faAngleDoubleDown, faAngleDoubleUp } from '@fortawesome/free-solid-svg-icons';
 import { faLightbulb, faUser } from '@fortawesome/free-regular-svg-icons';
 
+// Consolidated state management using useReducer
+const initialChatState = {
+  messages: [
+    { id: 0, message: "Hello! I'm your insight assistant. You can ask me anything about the IOT data here.", senderName: "Bot" },
+  ],
+  isLoading: false,
+  error: null,
+  nextMessageId: 1,
+};
+
+const chatReducer = (state, action) => {
+  switch (action.type) {
+    case 'ADD_MESSAGE':
+      return {
+        ...state,
+        messages: [...state.messages, { ...action.payload, id: state.nextMessageId }],
+        nextMessageId: state.nextMessageId + 1,
+      };
+    
+    case 'SET_LOADING':
+      return {
+        ...state,
+        isLoading: action.payload,
+        error: null,
+      };
+    
+    case 'SET_ERROR':
+      return {
+        ...state,
+        error: action.payload,
+        isLoading: false,
+      };
+    
+    case 'REPLACE_LOADING_MESSAGE':
+      return {
+        ...state,
+        messages: state.messages.map(msg => 
+          msg.id === action.payload.loadingId 
+            ? { ...action.payload.newMessage, id: action.payload.loadingId }
+            : msg
+        ),
+        isLoading: false,
+        error: null,
+      };
+    
+    case 'CLEAR_ERROR':
+      return {
+        ...state,
+        error: null,
+      };
+    
+    default:
+      return state;
+  }
+};
+
+// UI state management
+const initialUIState = {
+  isMinimized: true,
+  newMessage: '',
+  isSending: false,
+};
+
+const uiReducer = (state, action) => {
+  switch (action.type) {
+    case 'TOGGLE_MINIMIZED':
+      return {
+        ...state,
+        isMinimized: !state.isMinimized,
+      };
+    
+    case 'SET_NEW_MESSAGE':
+      return {
+        ...state,
+        newMessage: action.payload,
+      };
+    
+    case 'SET_SENDING':
+      return {
+        ...state,
+        isSending: action.payload,
+      };
+    
+    case 'CLEAR_INPUT':
+      return {
+        ...state,
+        newMessage: '',
+      };
+    
+    default:
+      return state;
+  }
+};
+
 const ChatWidget = () => {
-  const [isMinimized, setIsMinimized] = useState(true);
-  const [messages, setMessages] = useState([
-    { id: 0, message: "Hello! I'm your insight assistant. You can ask me anything about the IOT data here.", senderName: "Bot", isUser: false },
-  ]);
-  const [newMessage, setNewMessage] = useState('');
+  const [chatState, dispatchChat] = useReducer(chatReducer, initialChatState);
+  const [uiState, dispatchUI] = useReducer(uiReducer, initialUIState);
+  
   const messageEndRef = useRef(null);
   const sampleQuestions = [
     "which device uses the most electricity?",
@@ -19,45 +112,106 @@ const ChatWidget = () => {
   ];
 
   const handleOnSend = async () => {
-    if (!newMessage.trim()) return;
-    const nextId = messages.length;
-    const userMessage = { id: nextId, message: newMessage.trim(), senderName: "You", isUser: true };
-    setMessages(prev => [...prev, userMessage]);
-    setNewMessage('');
+    if (!uiState.newMessage.trim()) return;
+    
+    dispatchUI({ type: 'SET_SENDING', payload: true });
+    
+    // Add user message
+    dispatchChat({ 
+      type: 'ADD_MESSAGE', 
+      payload: { 
+        message: uiState.newMessage.trim(), 
+        senderName: "You", 
+      } 
+    });
+    
+    // Add loading message
+    const loadingMessageId = chatState.nextMessageId + 1;
+    dispatchChat({
+      type: 'ADD_MESSAGE',
+      payload: {
+        message: <SyncLoader color="#3B82F6" size={6}/>,
+        senderName: "Bot",
+        isLoading: true,
+      }
+    });
+    
+    const currentMessage = uiState.newMessage.trim();
+    dispatchUI({ type: 'CLEAR_INPUT' });
+    dispatchChat({ type: 'SET_LOADING', payload: true });
 
     try {
-      const response = await fetch(`http://localhost:8000/ask?q=${newMessage.trim()}`);
+      const response = await fetch(`http://192.168.1.10:8880/ask?q=${currentMessage}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      const botMessage = { id: nextId + 1, message: data.answer, senderName: "Bot", isUser: false };
-      setMessages(prev => [...prev, botMessage]);
+      
+      // Replace loading message with bot response
+      dispatchChat({
+        type: 'REPLACE_LOADING_MESSAGE',
+        payload: {
+          loadingId: loadingMessageId,
+          newMessage: {
+            message: data.answer,
+            senderName: "Bot",
+          }
+        }
+      });
+      
     } catch (error) {
       console.error("Error sending message:", error);
-      const errorMessage = { id: nextId + 1, message: "Error: Could not send message. Please check your connection and try again.", senderName: "Bot", isUser: false };
-      setMessages(prev => [...prev, botMessage]);
+      
+      // Replace loading message with error message
+      dispatchChat({
+        type: 'REPLACE_LOADING_MESSAGE',
+        payload: {
+          loadingId: loadingMessageId,
+          newMessage: {
+            message: "Error: Could not send message. Please check your connection and try again.",
+            senderName: "Bot",
+          }
+        }
+      });
+      
+      dispatchChat({ type: 'SET_ERROR', payload: error.message });
+    } finally {
+      dispatchUI({ type: 'SET_SENDING', payload: false });
     }
   };
 
-  function handleSampleQuestionClick(question) {
-    setNewMessage(question);
+  const handleSampleQuestionClick = (question) => {
+    dispatchUI({ type: 'SET_NEW_MESSAGE', payload: question });
+  };
+
+  const handleToggleMinimized = () => {
+    dispatchUI({ type: 'TOGGLE_MINIMIZED' });
+  };
+
+  const handleInputChange = (e) => {
+    dispatchUI({ type: 'SET_NEW_MESSAGE', payload: e.target.value });
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !uiState.isSending) {
+      handleOnSend();
+    }
   };
 
   // Scroll to bottom when messages update
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [chatState.messages]);
 
   return (
-    <div className="chat-widget" data-minimized={isMinimized}>
+    <div className="chat-widget" data-minimized={uiState.isMinimized}>
       {/* Minimize/Maximize Button */}
       <div
         className="chat-header"
-        onClick={() => setIsMinimized(!isMinimized)}
+        onClick={handleToggleMinimized}
       >
         <div className='w-full text-center'>AI Insight</div>
-        {isMinimized ? (
+        {uiState.isMinimized ? (
           <FontAwesomeIcon icon={faAngleDoubleDown} title="Expand" />
         ) : (
           <FontAwesomeIcon icon={faAngleDoubleUp} title="Collapse" />
@@ -65,24 +219,25 @@ const ChatWidget = () => {
       </div>
 
       {/* Chat messages */}
-      <div className="chat-message-area" data-minimized={isMinimized}>
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className="message-container"
-            data-user={msg.isUser}
-          >
-            {!msg.isUser && (
-              <FontAwesomeIcon icon={faLightbulb} className="avatar" />
-            )}
-            <div className="message-bubble" data-user={msg.isUser}>
-              {msg.message}
+      <div className="chat-message-area" data-minimized={uiState.isMinimized}>
+        {chatState.messages.map((msg) => {
+          const isUser = msg.senderName === 'You';
+          return (
+            <div
+              key={msg.id}
+              className="message-container"
+              data-user={isUser}
+            >
+              {!isUser && (
+                <FontAwesomeIcon icon={faLightbulb} className="avatar" />
+              )}
+              <div className="message-bubble" data-user={isUser}>
+                {msg.message}
+              </div>
+              {isUser && <FontAwesomeIcon icon={faUser} className="avatar" />}
             </div>
-            {msg.isUser && (
-              <FontAwesomeIcon icon={faUser} className="avatar" />
-            )}
-          </div>
-        ))}
+          );
+        })}
         <div ref={messageEndRef} />
       </div>
 
@@ -100,21 +255,23 @@ const ChatWidget = () => {
       </div>
 
       {/* Input area */}
-      {!isMinimized && (
+      {!uiState.isMinimized && (
         <div className="input-area">
           <input
             type="text"
             className="input-field"
             placeholder="Type a message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleOnSend()}
+            value={uiState.newMessage}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            disabled={uiState.isSending}
           />
           <button
             onClick={handleOnSend}
             className="send-button"
+            disabled={uiState.isSending || !uiState.newMessage.trim()}
           >
-            Send
+            {uiState.isSending ? 'Sending...' : 'Send'}
           </button>
         </div>
       )}
