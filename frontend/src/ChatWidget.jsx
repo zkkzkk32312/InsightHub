@@ -141,7 +141,7 @@ const ChatWidget = () => {
     dispatchChat({ type: 'SET_LOADING', payload: true });
 
     try {
-      const response = await fetch(`http://192.168.1.10:8880/ask?q=${currentMessage}`);
+      const response = await fetch(`https://iotinsight.zackcheng.com/ask?q=${encodeURIComponent(currentMessage)}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
