@@ -10,7 +10,7 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: 'index.jsx',
+      entry: 'src/index.jsx',
       name: 'ChatWidget',
       formats: ['iife'],
       fileName: () => 'chat-widget.iife.js',

@@ -26,7 +26,10 @@ def is_allowed_origin(origin: str) -> bool:
         host = parsed.hostname.lower() if parsed.hostname else ""
 
         # Allow subdomains of zackcheng.com
-        if host == "zackcheng.com" or host.endswith(".zackcheng.com"):
+        if host.endswith(".zackcheng.com"):
+            return True
+        
+        if host.startswith("https://zkkzkk32312.github.io"):
             return True
 
         # Allow LAN IPs only in 192.168.1.0/24
