@@ -130,7 +130,7 @@ const ChatWidget = () => {
     dispatchChat({
       type: 'ADD_MESSAGE',
       payload: {
-        message: <SyncLoader color="#3B82F6" size={6}/>,
+        message: <SyncLoader color="#3B82F6" size={4}/>,
         senderName: "Bot",
         isLoading: true,
       }
@@ -207,7 +207,7 @@ const ChatWidget = () => {
     <div className="chat-widget" data-minimized={uiState.isMinimized}>
       {/* Minimize/Maximize Button */}
       <div
-        className="chat-header"
+        className="chat-header bg-bkg3"
         onClick={handleToggleMinimized}
       >
         <div className='w-full text-center'>AI Insight</div>
@@ -219,19 +219,19 @@ const ChatWidget = () => {
       </div>
 
       {/* Chat messages */}
-      <div className="chat-message-area" data-minimized={uiState.isMinimized}>
+      <div className="chat-message-area bg-bkg" data-minimized={uiState.isMinimized}>
         {chatState.messages.map((msg) => {
           const isUser = msg.senderName === 'You';
+          const colorClass = isUser
+            ? 'bg-blue-500'
+            : 'bg-bkg2 text-content';
+
           return (
-            <div
-              key={msg.id}
-              className="message-container"
-              data-user={isUser}
-            >
+            <div key={msg.id} className="message-container" data-user={isUser}>
               {!isUser && (
                 <FontAwesomeIcon icon={faLightbulb} className="avatar" />
               )}
-              <div className="message-bubble" data-user={isUser}>
+              <div className={`message-bubble ${colorClass}`} data-user={isUser}>
                 {msg.message}
               </div>
               {isUser && <FontAwesomeIcon icon={faUser} className="avatar" />}
@@ -241,22 +241,26 @@ const ChatWidget = () => {
         <div ref={messageEndRef} />
       </div>
 
-      <div className="scroll mask-fade-x">
-        <div className="animate-scroll-left">
-          {[...sampleQuestions, ...sampleQuestions].map((q, index) => (
-            <span
-              key={index}
-              onClick={() => handleSampleQuestionClick(q)}
-            >
-              {q}
-            </span>
-          ))}
+
+      <div className="scroll bg-bkg">
+        <div className="mask-fade-x">
+          <div className="animate-scroll-left ">
+            {[...sampleQuestions, ...sampleQuestions].map((q, index) => (
+              <span
+                key={index}
+                onClick={() => handleSampleQuestionClick(q)}
+                className ="bg-bkg3"
+              >
+                {q}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Input area */}
       {!uiState.isMinimized && (
-        <div className="input-area">
+        <div className="input-area bg-bkg2">
           <input
             type="text"
             className="input-field"

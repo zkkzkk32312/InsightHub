@@ -30,5 +30,11 @@ export default defineConfig({
         },
       },
     },
+  },
+  define: {
+    // Define process for browser compatibility
+    'process.env.NODE_ENV': JSON.stringify('production'),
+    'process.env': JSON.stringify({}),
+    global: 'globalThis',
   }
 })
