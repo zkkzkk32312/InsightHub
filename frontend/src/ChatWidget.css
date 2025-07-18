@@ -25,12 +25,13 @@
 }
 
 .chat-widget {
-  @apply w-full max-w-md bg-white shadow-lg rounded-lg flex flex-col overflow-hidden fixed top-0 left-1/2 -translate-x-1/2 z-[1000] transition-[height] duration-300 ease-in-out;
+  @apply w-full max-w-md bg-white shadow-lg rounded-b-lg flex flex-col overflow-hidden fixed top-0 left-1/2 -translate-x-1/2 z-[1000] transition-all duration-400 ease-in-out;
   height: var(--chat-height);
 }
 
 .chat-widget[data-minimized="true"] {
   --chat-height: 3rem;
+  @apply !max-w-[7.5rem];
 }
 
 .chat-widget:not([data-minimized="true"]) {
